@@ -60,33 +60,22 @@ public class FarmerCont {
         List<FarmerPlotRegisterEntity> farmers = farmerSer.getAllFarmersSorted();
         return ResponseEntity.ok(farmers);
     }
-
-
     @PostMapping("/farmer/request")
     public ResponseEntity<?> submitRequest(@RequestBody FarmerRequestDto dto,
                                            @RequestHeader("Authorization") String authHeader) {
 
         String token = authHeader.substring(7);
-
-        // phone number = username
         String phoneNo = jwtService.extractUserName(token);
-
-        // find farmer in DB
         FarmerPlotRegisterEntity farmer = farmerRegRepo.findByPhoneNo(phoneNo);
 
-        // create request entity
+
         FarmerRequestEntity req = new FarmerRequestEntity();
         req.setPhoneNo(farmer.getPhoneNo());
         req.setFarmerCode(farmer.getFarmerCode());
         req.setPlotVillage(farmer.getPlotVillage());
         req.setLandArea(farmer.getLandArea());
-
-        // save que1 and que2 from farmer
         req.setQue1(dto.getQue1());
         req.setQue2(dto.getQue2());
-
-//        req.setStatus("PENDING");
-
         requestRepo.save(req);
 
         return ResponseEntity.ok("Request submitted");

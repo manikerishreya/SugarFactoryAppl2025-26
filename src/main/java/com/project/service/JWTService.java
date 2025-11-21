@@ -17,12 +17,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+//import static jdk.jfr.internal.EventWriterKey.getKey;
+
 @Service
 public class JWTService {
-
-
-
-
 
     @Value("${jwt.secret}")
     private String secretkey;   // now coming from application.properties
@@ -44,6 +42,13 @@ public class JWTService {
                 .compact();
 
     }
+//        return Jwts.builder()
+//                .setClaims(claims)        // <- this fixes the issue
+//                .setSubject(username)
+//                .setIssuedAt(new Date())
+//                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 hours
+//                .signWith(getKey())
+//                .compact();}
 
     public String extractRole(String token) {
         return extractAllClaims(token).get("role", String.class);
@@ -71,6 +76,12 @@ public class JWTService {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
+//        return Jwts.parser()
+//                .verifyWith(getKey())
+//                .build()
+//                .parseSignedClaims(token)
+//                .getPayload();
+
     }
     //verify the token
     public boolean validateToken(String token, UserDetails userDetails) {

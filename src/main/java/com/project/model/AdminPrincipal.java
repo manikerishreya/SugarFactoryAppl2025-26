@@ -1,5 +1,6 @@
 package com.project.model;
-import com.project.entity.OfficerEntity;
+
+import com.project.entity.AdminEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -8,29 +9,29 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
 
-public class OfficerPrinciple implements UserDetails {
+public class AdminPrincipal implements UserDetails {
 
-    private OfficerEntity officerEntity;
+    private final AdminEntity adminEntity;
 
-    public OfficerPrinciple(Optional<OfficerEntity> officerEntity) {
-        this.officerEntity = officerEntity.get();
+    public AdminPrincipal(Optional<AdminEntity> adminEntity) {
+        this.adminEntity = adminEntity.get();  // same as OfficerPrinciple
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.singleton(
-                new SimpleGrantedAuthority("ROLE_" + officerEntity.getRole())
+                new SimpleGrantedAuthority("ROLE_" + adminEntity.getRole())
         );
     }
 
     @Override
     public String getPassword() {
-        return officerEntity.getPassword();
+        return adminEntity.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return officerEntity.getUsername();
+        return adminEntity.getUsername();
     }
 
     @Override public boolean isAccountNonExpired() { return true; }

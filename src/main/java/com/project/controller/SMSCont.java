@@ -86,7 +86,7 @@ public class SMSCont {
     private JWTService jwtService;
     // Use environment variables instead of hardcoding in production
     public static final String ACCOUNT_SID = "";
-    public static final String AUTH_TOKEN = "";
+    public static final String AUTH_TOKEN = "";;
     public static final String FROM_NUMBER = "";
 
     static {

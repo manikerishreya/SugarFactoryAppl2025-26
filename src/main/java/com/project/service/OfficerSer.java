@@ -7,11 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-
+import java.util.Optional;
 
 @Service
 public class OfficerSer {
+
     @Autowired
     private OfficerRepo officerRepo;
 
@@ -19,52 +21,43 @@ public class OfficerSer {
     private JWTService jwtService;
 
     @Autowired
-    AuthenticationManager authManager;
+    private AuthenticationManager authManager;
 
     @Autowired
-    private FarmerRegRepo farmerRegRepo;
+    private BCryptPasswordEncoder passwordEncoder;
 
-//    @Autowired
-//    private OfficerEntity officer;
+    public String verify(OfficerEntity officerEntity) {
 
-//    public String verify(OfficerEntity officerEntity) {
-//        Authentication authentication =
-//                authManager.authenticate(new UsernamePasswordAuthenticationToken(
-//                        officerEntity.getUsername(), officerEntity.getPassword()));
-//        if (authentication.isAuthenticated()) {
-////            return jwtService.generateToken(officerEntity.getUsername(),"OFFICER");
-//            return jwtService.generateToken(officerEntity.getUsername(), officerEntity.getRole());
-//
-//        } else {
-//            return "fail";
-//        }
-//    }
-public String verify(OfficerEntity officerEntity) {
+        System.out.println("Received username: " + officerEntity.getUsername());
+        System.out.println("Received password: " + officerEntity.getPassword());
 
-    // Authenticate username + password
-    Authentication authentication = authManager.authenticate(
-            new UsernamePasswordAuthenticationToken(
-                    officerEntity.getUsername(),
-                    officerEntity.getPassword()
-            )
-    );
+        Optional<OfficerEntity> off = officerRepo.findByUsername(officerEntity.getUsername());
 
-    if (authentication.isAuthenticated()) {
+        if (!off.isPresent()) {
+            System.out.println("User not found in DB");
+            return null;
+        }
 
-        // Fetch officer from DB to get correct role
-        OfficerEntity dbOfficer = officerRepo.findByUsername(officerEntity.getUsername())
-                .orElseThrow(() -> new RuntimeException("Officer not found in DB"));
+        OfficerEntity db = off.get();
 
-        // Generate token with DB role
-        return jwtService.generateToken(dbOfficer.getUsername(), dbOfficer.getRole());
+        System.out.println("DB username: " + db.getUsername());
+        System.out.println("DB password: " + db.getPassword());
+
+        boolean matches = passwordEncoder.matches(
+                officerEntity.getPassword(),   // plaintext entered
+                db.getPassword()               // bcrypt hash from DB
+        );
+
+        if (!matches) {
+            System.out.println("Password mismatch (bcrypt)!");
+            return null;
+        }
+
+        System.out.println("Password correct! Generating token...");
+        return jwtService.generateToken(db.getUsername(), db.getRole());
     }
-
-    return "fail";
-}
 
     public OfficerEntity getOfficerByUsername(String username) {
-        return officerRepo.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Officer not found with username: " + username));
+        return officerRepo.findByUsername(username).orElse(null);
     }
 }
-

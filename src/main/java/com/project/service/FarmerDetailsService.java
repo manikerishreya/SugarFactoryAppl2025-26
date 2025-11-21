@@ -18,7 +18,6 @@ public class FarmerDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String phoneNo) throws UsernameNotFoundException {
-
         FarmerPlotRegisterEntity farmerEntity = farmerRegRepo.findByPhoneNo(phoneNo);
 
         if (farmerEntity == null) {

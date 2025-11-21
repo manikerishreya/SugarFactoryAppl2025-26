@@ -1,5 +1,6 @@
 package com.project.config;
 
+import com.project.service.AdminDetailsService;
 import com.project.service.JWTService;
 import com.project.service.OfficerDetailsService;
 import com.project.service.FarmerDetailsService;
@@ -18,6 +19,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Set;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
@@ -28,62 +30,77 @@ public class JwtFilter extends OncePerRequestFilter {
     @Autowired
     private ApplicationContext context;
 
+    // ---- PUBLIC PATHS ----
+    private static final Set<String> PUBLIC_URLS = Set.of(
+            "/adminlogin",
+            "/officerLogin",
+            "/login",
+            "/farmerReg",
+            "/generateotp",
+            "/checkvalidotp"
+    );
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
+        String path = request.getRequestURI();
+
+        // ---- Allow Public URLs ----
+        if (PUBLIC_URLS.contains(path)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String authHeader = request.getHeader("Authorization");
         String token = null;
-        String subject = null;
+        String username = null;
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
-            subject = jwtService.extractUserName(token); // could be phone or username
+
+            try {
+                username = jwtService.extractUserName(token);
+            } catch (Exception e) {
+                filterChain.doFilter(request, response);
+                return;
+            }
         }
 
-        if (subject != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        // No token OR authentication already set → skip
+        if (username == null || SecurityContextHolder.getContext().getAuthentication() != null) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-            // Read role from token
-            String role = jwtService.extractRole(token);
+        String role = jwtService.extractRole(token);
 
-            UserDetails userDetails;
+        if (role == null) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
+        // ---- Load UserDetails According to Role ----
+        UserDetails userDetails = switch (role) {
+            case "ROLE_FARMER" -> context.getBean(FarmerDetailsService.class).loadUserByUsername(username);
+            case "ROLE_OFFICER" -> context.getBean(OfficerDetailsService.class).loadUserByUsername(username);
+            case "ROLE_ADMIN" -> context.getBean(AdminDetailsService.class).loadUserByUsername(username);
+            default -> null;
+        };
 
-            if ("ROLE_FARMER".equals(role)) {
-                FarmerDetailsService farmerService = context.getBean(FarmerDetailsService.class);
-                userDetails = farmerService.loadUserByUsername(subject);
-            }
+        if (userDetails == null) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
+        // ---- Validate JWT ----
+        if (jwtService.validateToken(token, userDetails)) {
+            var authorities = Collections.singleton(new SimpleGrantedAuthority(role));
 
-            else if ("ROLE_OFFICER".equals(role)) {
-                OfficerDetailsService officerService = context.getBean(OfficerDetailsService.class);
-                userDetails = officerService.loadUserByUsername(subject);
-            }
+            UsernamePasswordAuthenticationToken authToken =
+                    new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
 
-
-            else if ("ROLE_ADMIN".equals(role)) {
-                OfficerDetailsService officerService = context.getBean(OfficerDetailsService.class);
-                userDetails = officerService.loadUserByUsername(subject);
-            }
-
-            else {
-                throw new RuntimeException("Invalid role in token");
-            }
-
-            // Validate token
-            if (jwtService.validateToken(token, userDetails)) {
-
-                var authorities = Collections.singleton(new SimpleGrantedAuthority(role));
-
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                authorities
-                        );
-
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-            }
+            SecurityContextHolder.getContext().setAuthentication(authToken);
         }
 
         filterChain.doFilter(request, response);

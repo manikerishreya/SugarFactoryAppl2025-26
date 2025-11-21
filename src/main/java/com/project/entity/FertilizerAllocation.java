@@ -21,7 +21,7 @@ public class FertilizerAllocation {
     private String plotVillage;
     private String farmerName;
     private Integer landArea;
-    private double fertilizerAllocated; // kg
-    private double totalCost; // Rs
-//    private LocalDateTime allocatedAt = LocalDateTime.now();
+    private double fertilizerAllocated;
+    private double totalCost;
+
 }
