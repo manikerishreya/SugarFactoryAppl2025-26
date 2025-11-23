@@ -14,7 +14,10 @@ import org.springframework.stereotype.Repository;
 //}
 @Repository
 public interface SMSRepo extends JpaRepository<SMSEntity, Integer> {
-    SMSEntity findByPhoneNoAndOtp(String phoneNo, Integer otp);
+//    SMSEntity findByPhoneNoAndOtp(String phoneNo, Integer otp);
 //    SMSEntity findByPhoneNo(String phoneNo);
+SMSEntity findByPhoneNo(String phoneNo);
+    void deleteByPhoneNo(String phoneNo);
+
 }
 

@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class EnteringOtpModel {
     private String phoneNo;
     private Integer otp;
+//    private String role;
 }

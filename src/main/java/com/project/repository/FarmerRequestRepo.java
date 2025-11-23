@@ -12,4 +12,5 @@ public interface FarmerRequestRepo extends JpaRepository<FarmerRequestEntity,Lon
     List<FarmerRequestEntity> findByStatus(String status);
 
     FarmerRequestEntity findByPhoneNo(String phoneNo);
+
 }

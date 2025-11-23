@@ -1,9 +1,6 @@
 package com.project.config;
 
-import com.project.service.AdminDetailsService;
-import com.project.service.JWTService;
-import com.project.service.OfficerDetailsService;
-import com.project.service.FarmerDetailsService;
+import com.project.service.*;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -85,6 +82,7 @@ public class JwtFilter extends OncePerRequestFilter {
             case "ROLE_FARMER" -> context.getBean(FarmerDetailsService.class).loadUserByUsername(username);
             case "ROLE_OFFICER" -> context.getBean(OfficerDetailsService.class).loadUserByUsername(username);
             case "ROLE_ADMIN" -> context.getBean(AdminDetailsService.class).loadUserByUsername(username);
+            case "ROLE_LAB" -> context.getBean(LabDetailsService.class).loadUserByUsername(username);
             default -> null;
         };
 

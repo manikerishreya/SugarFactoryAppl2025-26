@@ -9,16 +9,17 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class OfficerEntity {
+public class VillageEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    private String username;
-    private String password;
-    private String role;
-//    // Optional: to easily fetch all villages assigned to this officer
-//    @OneToMany(mappedBy = "officer")
-    private String village;
+    private String villageName;
+    private String villageCode;
+
+//    // Each village has exactly one officer assigned
+    @ManyToOne
+    @JoinColumn(name = "officer_id")  // foreign key column
+    private OfficerEntity officer;
 }

@@ -87,14 +87,25 @@ public class SecurityConfig {
                                 "/checkvalidotp",
                                 "/records/sorted",
                                 "/officerLogin",
-                                "/FarmerList",
                                 "/Fertilizer",
-                                "/adminlogin"
+                                "/adminlogin",
+                                "lab/add",
+                                "/update/{labId}",
+                                "/activate/{labId}",
+                                "/deactivate/{labId}",
+                                "/{labId}",
+                                "/send-otp",
+                                "/verify-otp",
+                                "/villages",
+                                "/farmers/by-village/{villageName}"
+
                         ).permitAll()
-                        .requestMatchers("/farmerProfile/**").hasRole("FARMER")
+                        .requestMatchers("/farmerRecords/**").hasAnyRole("FARMER", "OFFICER","ADMIN")
                         .requestMatchers("/officerProfile").hasRole("OFFICER")
                         .requestMatchers("/allocate/**").hasRole("OFFICER")
                         .requestMatchers("/requests/pending").hasRole("OFFICER")
+                        .requestMatchers("/FarmerList").hasRole("OFFICER")
+                        .requestMatchers("/lab/**").hasRole("LAB")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

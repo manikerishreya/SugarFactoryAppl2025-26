@@ -55,4 +55,8 @@ public class FarmerPlotRegisterEntity {
     private String needFertilizer;
 //    private String soilType;
 //    private String interCrop;
+@Temporal(TemporalType.DATE)
+@JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
+private Date cuttingDate;
+
 }
